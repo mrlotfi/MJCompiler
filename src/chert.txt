@@ -1,4 +1,11 @@
-public class {
-            public
-            void main ( Strb ) { }
+
+
+public class ali {
+    public static int a ;
+    public static int b ;
+    public static boolean c;
+
 }
+
+
+public class hassan extends lus

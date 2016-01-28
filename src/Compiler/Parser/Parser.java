@@ -1,7 +1,17 @@
 package Compiler.Parser;
 
-/**
- * Created by mrlotfi on 1/27/16.
- */
+
+import Compiler.Lexer.RawScanner;
+import Compiler.SymTable.Token;
+
 public class Parser {
+    private RawScanner scanner;
+
+
+    public Token getToken_Generate() {
+        Token t = scanner.getNextToken();
+        if(t.getTokenType() == Token.KEYWORD_TYPE && t.getName() == "class") {
+       }
+        return t;
+    }
 }
