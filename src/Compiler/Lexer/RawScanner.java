@@ -25,6 +25,7 @@ public class RawScanner {
     public boolean delcaring_class;
     public boolean declaring_var;
     public boolean declaring_method;
+    public boolean declaring_extends;
     public boolean after_dot;
     private SymbolTable after_dot_symbolTable;
 
@@ -44,6 +45,7 @@ public class RawScanner {
     public RawScanner(String filename) {
         this.filename = filename;
         currentSymbolTable = mainSymbolTable = new SymbolTable(null,0);
+        declaring_method = declaring_extends = declaring_var = delcaring_class = false;
         line_number = 0;
     }
 
@@ -136,6 +138,8 @@ public class RawScanner {
         if (isMember(token, KEYWORDS_RAW)) {
             if(token.equals("class"))
                 delcaring_class = true;
+            if(token.equals("extends"))
+                declaring_extends = true;
             return new Token(token,Token.OPERATOR_TYPE);
         }
 
@@ -177,9 +181,16 @@ public class RawScanner {
             currentSymbolTable = currentSymbolTable.previous_level;
     }
 
+    public void resetFlags() {
+        declaring_extends = false;
+        delcaring_class = false;
+        after_dot = false;
+    }
+
     private SymbolTableAddress processIdentifier(String name) {
         if(delcaring_class) {
             delcaring_class = false;
+
             SymbolTableEntry t= new SymbolTableEntry(name, SymbolTableEntry.CLASS_ID);
             t.next_level = new SymbolTable(mainSymbolTable,1);
             currentSymbolTable = t.next_level;
@@ -188,6 +199,14 @@ public class RawScanner {
             address.related_symbolTable = mainSymbolTable;
             address.rowNumber = mainSymbolTable.getSize()-1;
             return address;
+        }
+        else if(declaring_extends) {
+            declaring_extends = false;
+            SymbolTableAddress address = mainSymbolTable.globalSearch(name);
+            if(address != null)
+                return address;
+            //TODO error message
+            return null;
         }
         else if(declaring_method) {
             declaring_method = false;

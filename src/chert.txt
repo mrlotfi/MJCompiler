@@ -8,4 +8,6 @@ public class ali {
 }
 
 
-public class hassan extends lus
+public class hassan extends alio {
+
+}

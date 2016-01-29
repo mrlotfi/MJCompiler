@@ -6,7 +6,8 @@ import java.util.Scanner;
 public class Main {
     public static  void main(String[] args) {
 
-
+        String[] chert = new String[]{};
+        System.out.println(chert.length);
         RawScanner s = new RawScanner("/home/mrlotfi/IdeaProjects/MJCompiler/src/chert.txt");
         try {
             s.initialize();
