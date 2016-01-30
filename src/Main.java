@@ -1,21 +1,30 @@
 import Compiler.Lexer.RawScanner;
-import Compiler.SymTable.Token;
-
-import java.util.Scanner;
+import Compiler.Parser.ParseTable;
+import Compiler.Parser.Parser;
 
 public class Main {
     public static  void main(String[] args) {
+        ParseTable table = new ParseTable();
+        table.initialize();
 
-        String[] chert = new String[]{};
-        System.out.println(chert.length);
-        RawScanner s = new RawScanner("/home/mrlotfi/IdeaProjects/MJCompiler/src/chert.txt");
+
+        RawScanner scanner = new RawScanner("/home/mrlotfi/IdeaProjects/MJCompiler/src/chert.txt");
         try {
-            s.initialize();
+            scanner.initialize();
         }
-        catch(Exception o){System.out.println("No file exists");}
-        Token n;
-        while((n = s.getNextToken()) != null);
-            //System.out.println(n.getName());
+        catch(Exception o){}
+
+
+
+        Parser parser = new Parser(scanner);
+        while(parser.doPars_oneStep()!=0) {
+            System.out.println(scanner.currentToken());
+            parser.printStack();
+            System.out.println('\n');
+        }
+
+        //scanner.mainSymbolTable.printElements(0);
 
     }
 }
+

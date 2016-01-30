@@ -1,14 +1,19 @@
 package Compiler.Parser;
 
 
+import org.omg.CORBA.NO_IMPLEMENT;
+
 import java.util.HashMap;
 import java.util.Map;
-import java.util.StringJoiner;
 
 public class ParseTable {
     private Map<String , Map<String,String[]>> MainTable;
     public ParseTable() {
         MainTable = new HashMap<>();
+    }
+
+    public String[] lookup(String NonTerminal, String Terminal) {
+        return MainTable.get(NonTerminal).get(Terminal);
     }
 
     public void initialize() {
@@ -21,6 +26,7 @@ public class ParseTable {
         temp_column.put("$", new String[] {"sync"});
         MainTable.put("Goal",temp_column);
 
+
         //Source
         temp_column = new HashMap<>();
         temp_column.put("class",new String[] {"ClassDeclarations","MainClass"});
@@ -32,7 +38,7 @@ public class ParseTable {
         //MainClass -> public class Identifier { public static void main () { Vardeclarations Statements } }
         temp_column = new HashMap<>();
         temp_column.put("public",new String[] {
-            "public", "class", "identifier", "{", "public",  "static", "void", "main", "()", "{",  "Vardeclarations", "Statements", "}", "}"
+            "public", "class", "Identifier", "{", "public",  "static", "void", "main", "()", "{",  "VarDeclarations", "Statements", "}", "}"
         });
         temp_column.put("$", new String[] {"sync"});
         MainTable.put("MainClass",temp_column);
@@ -48,7 +54,7 @@ public class ParseTable {
         //ClassDeclaration -> class Identifier Extension { FieldDeclarations MethodDeclarations }
         temp_column = new HashMap<>();
         temp_column.put("class", new String[] {
-            "class", "Identifier", "Extension" ,"{", "FieldDeclarations", "MethodDeclarations", "}"
+            "class","#classpid", "Identifier", "Extension" ,"#extend2","{", "FieldDeclarations", "MethodDeclarations", "}"
         });
         temp_column.put("public",new String[] {"sync"});
         MainTable.put("ClassDeclaration" , temp_column);
@@ -83,7 +89,7 @@ public class ParseTable {
         temp_column = new HashMap<>();
         temp_column.put("int", new String[] {"VarDeclaration", "VarDeclarations"});
         temp_column.put("boolean", new String[] {"VarDeclaration", "VarDeclarations"});
-        String[] follows = {"boolean", "int", "{" , "if" , "while" , "switch" , "System.out.println" , "<IDENTIFIER_LITERAL>" , "return" , "}" , "break"};
+        String[] follows = {"return","}","{" , "if" , "while" , "switch" , "System.out.println" , "<IDENTIFIER_LITERAL>" };
         for(String s:follows)
             temp_column.put(s,new String[]{});
         MainTable.put("VarDeclarations", temp_column);
@@ -131,13 +137,31 @@ public class ParseTable {
         temp_column = new HashMap<>();
         temp_column.put("int", new String[]{"int"});
         temp_column.put("boolean", new String[]{"boolean"});
+        temp_column.put("<IDENTIFIER_LITERAL>", new String[] {"sync"});
         MainTable.put("Type",temp_column);
 
         //Statements -> Statement Statements |
         temp_column = new HashMap<>();
+        temp_column.put("if", new String[] {
+                "Statement", "Statements"
+        });
+        temp_column.put("while", new String[] {
+                "Statement", "Statements"
+        });
+        temp_column.put("switch", new String[] {
+                "Statement", "Statements"
+        });
+        temp_column.put("System.out.println", new String[] {
+                "Statement", "Statements"
+        });
+        temp_column.put("<IDENTIFIER_LITERAL>", new String[] {
+                "Statement", "Statements"
+        });
+
         String[] statements_follows = {
-                "{", "if", "while", "switch", "System.out.println", "<IDENTIFIER_LITERAL>"
+                "}", "return", "break"
         };
+
         for(String s:statements_follows)
             temp_column.put(s,new String[] {"Statement", "Statements"});
         temp_column.put("break", new String[]{});
@@ -164,7 +188,8 @@ public class ParseTable {
                 "Identifier", "=", "GenExpression", ";"
         });
         String[] statement_follows = {
-             "else", "break", "}", "return"
+            "else",  "}", "return","break"
+
         };
         for(String s:statement_follows)
             temp_column.put(s,new String[] {"sync"});
@@ -194,18 +219,36 @@ public class ParseTable {
         temp_column.put("}", new String[] {"sync"});
         MainTable.put("CaseStatement", temp_column);
 
-        //GenExpression -> Expression | RelExpression
-        //TODO
-
-        //Expression -> Term Expressions
-        temp_column  = new HashMap<>();
+        //GenExpression ->  Expression X
         String[] expression_firsts = {
                 "(", "true", "false", "<IDENTIFIER_LITERAL>", "<INTEGER_LITERAL>"
         };
+        temp_column = new HashMap<>();
+        for(String s: expression_firsts)
+                temp_column.put(s,new String[] {"Expression", "X"});
+        temp_column.put(")" , new String[] {"sync"});
+        temp_column.put(":" , new String[] {"sync"});
+        temp_column.put("," , new String[] {"sync"});
+        temp_column.put(";" , new String[] {"sync"});
+        MainTable.put("GenExpression",temp_column);
+
+        //X -> EPSILON | RelTermRest RelExpressions
+        temp_column = new HashMap<>();
+        temp_column.put("==", new String[]{"RelTermRest", "RelExpressions"});
+        temp_column.put("<", new String[]{"RelTermRest", "RelExpressions"});
+        temp_column.put(")" , new String[] {});
+        temp_column.put(":" , new String[] {});
+        temp_column.put("," , new String[] {});
+        temp_column.put(";" , new String[] {});
+        MainTable.put("X",temp_column);
+
+        //Expression -> Term Expressions
+        temp_column  = new HashMap<>();
+
         for(String s:expression_firsts)
             temp_column.put(s,new String[] {"Term", "Expressions"});
         String[] expression_follows = {
-             ")" , ":" , "," , "==" , "<" , "&&"
+             ")" , ":" , "," , "==" , "<" , "&&", ";"
         };
         for(String s:expression_follows)
             temp_column.put(s,new String[]{"sync"});
@@ -231,7 +274,7 @@ public class ParseTable {
         for(String s :expression_firsts)
             temp_column.put(s,new String[]{"Factor" ,"Terms"});
         String[] term_follow = new String[] {
-            ")" , ":" , "," ,"==" , "<" , "&&" , "-" , "+"
+            ";", ")" , ":" , "," ,"==" , "<" , "&&" , "-" , "+"
         };
         for(String s:term_follow)
             temp_column.put(s,new String[]{"sync"});
@@ -248,13 +291,13 @@ public class ParseTable {
 
         //Factor -> ( Expression ) | Identifier FactorRest | true | false | Integer
         temp_column = new HashMap<>();
-        temp_column.put(")", new String[] {"(","Expression",")"});
+        temp_column.put("(", new String[] {"(","Expression",")"});
         temp_column.put("<IDENTIFIER_LITERAL>",new String[] {"Identifier", "FactorRest"});
         temp_column.put("<INTEGER_LITERAL>", new String[]{"Integer"});
         temp_column.put("true",new String[]{"true"});
         temp_column.put("false", new String[]{"false"});
         String[] factor_follow = {
-                "*" , ")" , ":" , "," , "==" , "<" , "&&"
+                ";","+","-", "*" , ")" , ":" , "," , "==" , "<" , "&&"
         };
         for(String s:factor_follow)
             temp_column.put(s,new String[]{"sync"});
@@ -269,11 +312,11 @@ public class ParseTable {
 
         //FactorRest2 ->  | ( Arguments )
         temp_column = new HashMap<>();
-        temp_column.put(")" , new String[] {"(", "Arguments" ,")"});
+        temp_column.put("(" , new String[] {"(", "Arguments" ,")"});
         for(String s:factor_follow)
             temp_column.put(s,new String[]{});
         MainTable.put("FactorRest2",temp_column);
-
+        /* Rule removed. nothing produces this anymore
         //RelExpression -> RelTerm RelExpressions
         temp_column = new HashMap<>();
         String[] rel_firsts = {
@@ -286,6 +329,7 @@ public class ParseTable {
         temp_column.put(",",new String[]{"sync"});
         temp_column.put(";",new String[]{"sync"});
         MainTable.put("RelExpression",temp_column);
+        */
 
         //RelExpressions -> && RelTerm RelExpressions | EPSILON
         temp_column = new HashMap<>();
@@ -295,7 +339,7 @@ public class ParseTable {
         temp_column.put(")",new String[]{});
         temp_column.put(":",new String[]{});
         temp_column.put(",",new String[]{});
-        temp_column.put(";",new String[]{"sync"});
+        temp_column.put(";",new String[]{});
         MainTable.put("RelExpressions",temp_column);
 
         //Relterm -> Expression RelTermRest
@@ -305,6 +349,10 @@ public class ParseTable {
                     "Expression", "RelTermRest"
             });
         temp_column.put("&&", new String[]{"sync"});
+        temp_column.put(")",new String[]{"sync"});
+        temp_column.put(":",new String[]{"sync"});
+        temp_column.put(",",new String[]{"sync"});
+        temp_column.put(";",new String[]{"sync"});
         MainTable.put("Relterm",temp_column);
 
         //RelTermRest -> == Expression | < Expression
@@ -312,7 +360,7 @@ public class ParseTable {
         temp_column.put("==", new String[] {"==", "Expression"});
         temp_column.put("<", new String[] {"<" ,"Expression"});
         String[] reltermrest_follow = {
-                "(" , "<IDENTIFIER_LITERAL>" , "true" , "false" , "<INTEGER_LITERAL>" , "&&"
+                ")",":",";","," , "&&"
         };
         for(String s:reltermrest_follow)
             temp_column.put(s,new String[]{"sync"});
@@ -330,6 +378,7 @@ public class ParseTable {
         temp_column = new HashMap<>();
         temp_column.put(",", new String[] {",","GenExpression", "Argument"});
         temp_column.put(")", new String[]{});
+        MainTable.put("Argument",temp_column);
 
         //Identifier -> <IDENTIFIER_LITERAL>
         //Integer -> <INTEGER_LITERAL>
@@ -339,7 +388,7 @@ public class ParseTable {
         String[] identifier_follows = {
                 "(", ".", "=", ",", ";", "extends", "{", "*", "-", "+", "==", "<", ")", ":"
         };
-        
+
         temp_column = new HashMap<>();
         temp_column.put("<IDENTIFIER_LITERAL>", new String[]{"<IDENTIFIER_LITERAL>"});
         for(String s:identifier_follows)

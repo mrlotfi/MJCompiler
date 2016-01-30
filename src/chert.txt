@@ -1,13 +1,40 @@
+class A {
+	static int a ;
+	static boolean b ;
+	static int c ;
 
+	public static int init ( int aa , int bb , int cc ) {
+		a = aa ;
+		b = bb ;
+		c = cc ;
+		return a ;
+	}
 
-public class ali {
-    public static int a ;
-    public static int b ;
-    public static boolean c;
-
+	public static boolean chert ( ) {
+	    return true ;
+	}
 }
 
+class B extends A {
+	static boolean alpha1 ;
+	static int betaCamelCase ;
 
-public class hassan extends alio {
+	public static boolean init ( boolean kooft ) {
+		if ( A . a == kooft )
+			betaCamelCase = kooft ;
+		else
+			betaCamelCase = 1 ;
+		return kooft ;
+	}
+}
 
+public class Main {
+	public static void main () {
+		int a ;
+		int b ;
+		a = A . a ;
+		b = B . betaCamelCase ;
+		a = B . init ( 5 ) ;
+		System.out.println ( a + B . betaCamelCase ) ;
+	}
 }

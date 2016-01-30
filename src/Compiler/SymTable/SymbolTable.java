@@ -5,8 +5,16 @@ import java.util.ArrayList;
 
 public class SymbolTable {
     public SymbolTable previous_level;
-    private ArrayList<SymbolTableEntry> list;
+    public ArrayList<SymbolTableEntry> list;
     private int level;
+
+
+    public SymbolTable(SymbolTable previous, int level) {
+        previous_level = previous;
+        list = new ArrayList<>();
+        this.level = level;
+    }
+
 
     public int getSize() {
         return list.size();
@@ -15,10 +23,17 @@ public class SymbolTable {
     public int getLevel() {
         return level;
     }
-    public SymbolTable(SymbolTable previous, int level) {
-        previous_level = previous;
-        list = new ArrayList<>();
-        this.level = level;
+
+    public void printElements(int padding) {
+        for(SymbolTableEntry s:list) {
+            for(int i=0;i<padding;i++) System.out.print(" ");
+            System.out.println(s.name);
+            if(s.next_level != null) {
+                for(int i=0;i<padding;i++) System.out.print(" ");
+                System.out.println("|");
+                s.next_level.printElements(padding+2);
+            }
+        }
     }
 
     public void addEntry(SymbolTableEntry t) {

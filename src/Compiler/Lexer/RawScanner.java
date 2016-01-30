@@ -39,14 +39,18 @@ public class RawScanner {
     private String current_token;
     private String next_token;
 
-    private SymbolTable mainSymbolTable;
+    public SymbolTable mainSymbolTable;
     public SymbolTable currentSymbolTable;
 
     public RawScanner(String filename) {
         this.filename = filename;
         currentSymbolTable = mainSymbolTable = new SymbolTable(null,0);
-        declaring_method = declaring_extends = declaring_var = delcaring_class = false;
+        declaring_method = declaring_extends = declaring_var = delcaring_class = after_dot = false;
         line_number = 0;
+    }
+
+    public int getCurrentLine() {
+        return line_number;
     }
 
     public void initialize() throws IOException {
@@ -127,20 +131,26 @@ public class RawScanner {
         return null;
     }
 
-    public Token getNextToken()  {
-        String token = current_token;
+
+    public void roll() {
         current_token = next_token;
         next_token = getNextRawToken();
-        System.out.println("Read this token " + token);
+    }
+
+    public Token getCurrentToken()  {
+        String token = current_token;
+        //System.out.println("Read this token " + token);
         if(token == null)
             return null;
         //TODO use line number
         if (isMember(token, KEYWORDS_RAW)) {
-            if(token.equals("class"))
-                delcaring_class = true;
-            if(token.equals("extends"))
-                declaring_extends = true;
-            return new Token(token,Token.OPERATOR_TYPE);
+          //  if(token.equals("class"))
+           //     delcaring_class = true;
+           // if(token.equals("extends"))
+           //     declaring_extends = true;
+            if(token.equals("main"))
+                createMainMethodSymTable();
+            return new Token(token,Token.KEYWORD_TYPE);
         }
 
         if (token.matches(IDENTIFIER_PATTERN)) {
@@ -222,26 +232,25 @@ public class RawScanner {
         }
         else {
             if(next_token.equals(".")) {
-                after_dot = true;
-                if(currentSymbolTable.getLevel() == 1)
-                    after_dot_symbolTable = currentSymbolTable;
-                else
-                    after_dot_symbolTable = currentSymbolTable.previous_level;
+                //after_dot = true;
 
                 SymbolTableAddress t = mainSymbolTable.globalSearch(name);
-                if( t != null)
+                if( t != null) {
+                    after_dot_symbolTable = mainSymbolTable.list.get(t.rowNumber).next_level;
                     return t;
+                }
                 //TODO generate error
                 SymbolTableEntry temp = new SymbolTableEntry(name,SymbolTableEntry.CLASS_ID);
+                temp.next_level = new SymbolTable(mainSymbolTable,1);
                 mainSymbolTable.addEntry(temp);
                 SymbolTableAddress address = new SymbolTableAddress();
                 address.related_symbolTable = mainSymbolTable;
                 address.rowNumber = mainSymbolTable.getSize() - 1;
+                after_dot_symbolTable = mainSymbolTable.list.get(address.rowNumber).next_level;
                 return address;
             }
             else {
                 if(after_dot) {
-                    after_dot = false;
                     int t = after_dot_symbolTable.localSearch(name);
                     if( t != -1) {
                         SymbolTableAddress address = new SymbolTableAddress();
@@ -249,6 +258,7 @@ public class RawScanner {
                         address.related_symbolTable = after_dot_symbolTable;
                         return address;
                     }
+
                     SymbolTableEntry temp = new SymbolTableEntry(name,-1);
                     after_dot_symbolTable.addEntry(temp);
                     SymbolTableAddress address = new SymbolTableAddress();
@@ -279,6 +289,14 @@ public class RawScanner {
                 }
             }
         }
+    }
+
+    public void createMainMethodSymTable() {
+        SymbolTableEntry t = new SymbolTableEntry("main",SymbolTableEntry.METHOD_ID);
+        t.next_level = new SymbolTable(currentSymbolTable,2);
+        t.arguments_number = 0;
+        currentSymbolTable.addEntry(t);
+        currentSymbolTable = t.next_level;
     }
 
     public String nextToken() {
