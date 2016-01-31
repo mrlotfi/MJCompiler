@@ -22,7 +22,10 @@ public class Parser {
         parseTable = new ParseTable();
         parseTable.initialize();
         error_accured = false;
+        errors = new String("");
     }
+
+    public String errors;
 
 
     private void checkAndSetScannerBITS(String rule) {
@@ -64,10 +67,14 @@ public class Parser {
 
             String[] lookup_value = parseTable.lookup(parseStack.pop(),nonterminal);
             if(lookup_value == null) {
+                errors = errors + "Error at line "+scanner.getCurrentLine()+" didn't expect this input here.\n";
                 System.out.print("Error at line "+scanner.getCurrentLine()+" didn't expect this input here. ");
                 error_accured = true;
                 while(true) {
                     scanner.roll();
+                    currentToken = scanner.getCurrentToken();
+                    if(currentToken == null)
+                        return -2;
                     if(currentToken.getTokenType() == Token.ID_TYPE)
                         nonterminal = "<IDENTIFIER_LITERAL>";
                     else if(currentToken.getTokenType() == Token.INT_TYPE)
@@ -75,6 +82,8 @@ public class Parser {
                     else
                         nonterminal = currentToken.getName();
 
+                    if(parseTable.lookup(stackTop,nonterminal) == null)
+                        continue ;
                     if(parseTable.lookup(stackTop,nonterminal).length == 0)
                         break;
                     else if(parseTable.lookup(stackTop,nonterminal).length == 1)
@@ -92,6 +101,7 @@ public class Parser {
                 //System.out.println("popped "+stackTop);
                 if(lookup_value[0].equals("sync")) {
                     System.out.println("Error at line " + scanner.getCurrentLine()+" input was missed there");
+                    errors = errors + "Error at line " + scanner.getCurrentLine()+" input was missed there\n";
                     error_accured = true;
                     return -3;
                 }
@@ -107,16 +117,15 @@ public class Parser {
         else if(stackTop.charAt(0) == '#') {
             if(error_accured) {
                 parseStack.pop();
-                return -1;
+                return -10;
             }
 
             String actiontype = stackTop.substring(1);
-
             java.lang.reflect.Method method = null;
             try {
                 method = codegenerator.getClass().getMethod(actiontype);
             } catch (Exception e) {
-                System.out.println("Verybad");
+                System.out.println("Verybad2");
             }
             try {
                 method.invoke(codegenerator);
@@ -139,6 +148,7 @@ public class Parser {
             else {
                 parseStack.pop();
                 System.out.println("Error at line " + scanner.getCurrentLine()+ " expected "+stackTop+ " terminal here but saw "+nonterminal);
+                errors = errors + "Error at line " + scanner.getCurrentLine()+ " expected "+stackTop+ " terminal here but saw "+nonterminal +"\n";
                 error_accured = true;
                 return -4;
             }

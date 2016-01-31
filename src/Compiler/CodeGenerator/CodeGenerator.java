@@ -26,8 +26,9 @@ public class CodeGenerator {
     }
 
     public void printCode() {
+        System.out.println("Stack is empty? "+semanticStack.empty());
         for(int i=0;i<memoryOrganizer.getCodeblocksPointer();i++) {
-            System.out.println(memoryOrganizer.code[i].toString());
+            System.out.println(i+". "+memoryOrganizer.code[i].toString());
         }
     }
 
@@ -326,6 +327,7 @@ public class CodeGenerator {
     }
 
     public void savecase() {
+        System.out.println(semanticStack.size());
         int i = memoryOrganizer.reserveProgramBlock();
         int i2 = memoryOrganizer.reserveProgramBlock();
         int addr = memoryOrganizer.reserveTemp();
@@ -335,18 +337,19 @@ public class CodeGenerator {
             "eq",op1.intValue(),op2.intValue(),addr,0,0,0
         );
         semanticStack.push(new Integer(addr));
-        semanticStack.push(new Integer(i));
+        semanticStack.push(new Integer(i2));
     }
 
     public void casejp() {
         Integer underjp = (Integer) semanticStack.get(0);
         int i = memoryOrganizer.reserveProgramBlock();
         memoryOrganizer.code[i] = new Instruction(
-                "jp",underjp-1,-1,-1,2,0,0
+                "jp",underjp,-1,-1,2,0,0
         );
     }
 
     public void patchcase() {
+        System.out.println(semanticStack.size());
         Integer save2 = (Integer) semanticStack.pop();
         Integer varaddr1 = (Integer) semanticStack.pop();
         memoryOrganizer.code[save2] = new Instruction(

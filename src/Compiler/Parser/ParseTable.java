@@ -111,7 +111,7 @@ public class ParseTable {
         //MethodDeclaration -> public static Type Identifier ( Parameters ) { VarDeclarations Statements return GenExpression ; }
         temp_column = new HashMap<>();
         temp_column.put("public",new String[] {
-            "public", "static","#cachetype", "Type","#completefunctioninfo", "Identifier", "(", "Parameters", ")", "{" ,"VarDeclarations", "Statements","#retaddress", "return", "GenExpression","#assignment", ";",  "}"
+            "public", "static","#cachetype", "Type","#completefunctioninfo", "Identifier", "(", "Parameters", ")", "{" ,"VarDeclarations", "Statements","#retaddress", "return", "GenExpression","#assignment","#returner", ";",  "}"
         });
         temp_column.put("}", new String[] {"sync"});
         MainTable.put("MethodDeclaration",temp_column);
@@ -176,7 +176,7 @@ public class ParseTable {
             "if", "(", "GenExpression", ")","#save", "Statement", "else","#jpfsave", "Statement","#jp"
         });
         temp_column.put("while", new String[] {
-             "while","#label", "(", "GenExpression" ,")","save", "Statement","whiler"
+             "while","#label", "(", "GenExpression" ,")","#save", "Statement","#whiler"
         });
         temp_column.put("switch", new String[] {
             "#switchsave","switch", "(" ,"GenExpression", ")", "{", "CaseStatements", "#patchswitch","}"
@@ -206,7 +206,7 @@ public class ParseTable {
         //CaseStatementsRest -> CaseStatement CaseStatementRest |
         temp_column = new HashMap<>();
         temp_column.put("case", new String[] {
-                "CaseStatement","#patchcase", "CaseStatementRest"
+                "CaseStatement","#patchcase", "CaseStatementsRest"
         });
         temp_column.put("}", new String[]{});
         MainTable.put("CaseStatementsRest",temp_column);
@@ -214,7 +214,7 @@ public class ParseTable {
         //CaseStatement -> case GenExpression : Statements break ;
         temp_column = new HashMap<>();
         temp_column.put("case",new String[] {
-             "case", "GenExpression","#casesave", ":", "Statements", "break", "#casejp",";"
+             "case", "GenExpression","#savecase", ":", "Statements", "break", "#casejp",";"
         });
         temp_column.put("}", new String[] {"sync"});
         MainTable.put("CaseStatement", temp_column);
@@ -353,7 +353,7 @@ public class ParseTable {
         temp_column.put(":",new String[]{"sync"});
         temp_column.put(",",new String[]{"sync"});
         temp_column.put(";",new String[]{"sync"});
-        MainTable.put("Relterm",temp_column);
+        MainTable.put("RelTerm",temp_column);
 
         //RelTermRest -> == Expression | < Expression
         temp_column = new HashMap<>();

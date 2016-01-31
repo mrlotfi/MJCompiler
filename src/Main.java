@@ -18,15 +18,19 @@ public class Main {
 
         Parser parser = new Parser(scanner);
         int i;
-        while((i=parser.doPars_oneStep())!=0) {
+        while((i=parser.doPars_oneStep())!=0 && (i=parser.doPars_oneStep())!=-1) {
             if(i <0)
                 parser.error_accured = true;
             System.out.println(scanner.currentToken());
             parser.printStack();
             System.out.println('\n');
         }
-
-        parser.printGeneratedCode();
+        System.out.println("Parse error? :"+(parser.error_accured));
+        if(parser.error_accured)
+            System.out.println(parser.errors);
+        System.out.println();
+        if(!parser.error_accured)
+            parser.printGeneratedCode();
         //scanner.mainSymbolTable.printElements(0);
 
     }
