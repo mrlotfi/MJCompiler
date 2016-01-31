@@ -17,12 +17,16 @@ public class Main {
 
 
         Parser parser = new Parser(scanner);
-        while(parser.doPars_oneStep()!=0) {
+        int i;
+        while((i=parser.doPars_oneStep())!=0) {
+            if(i <0)
+                parser.error_accured = true;
             System.out.println(scanner.currentToken());
             parser.printStack();
             System.out.println('\n');
         }
 
+        parser.printGeneratedCode();
         //scanner.mainSymbolTable.printElements(0);
 
     }

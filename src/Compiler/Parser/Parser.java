@@ -12,7 +12,7 @@ public class Parser {
     private Stack<String> parseStack;
     private ParseTable parseTable;
     private CodeGenerator codegenerator;
-    private boolean error_accured;
+    public boolean error_accured;
     public Parser(RawScanner scanner) {
         codegenerator  = new CodeGenerator(this,scanner);
         this.scanner =  scanner;
@@ -148,5 +148,9 @@ public class Parser {
     public void printStack() {
         for(String s:parseStack)
             System.out.print(s+" ");
+    }
+
+    public void printGeneratedCode() {
+        codegenerator.printCode();
     }
 }

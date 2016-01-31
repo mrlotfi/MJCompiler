@@ -33,6 +33,6 @@ public class MemoryOrganizer {
 
 
     public int getCodeblocksPointer() {
-        return currentTempDataPointer;
+        return codeblocksPointer;
     }
 }

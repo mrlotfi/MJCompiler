@@ -1,9 +1,10 @@
 class ali {
-
+    static int a ;
 }
-public class Main {
+public clss Main {
 	public static void main () {
 		int a ;
 		a  = 5 ;
+		a = ali . a ;
 	}
 }

@@ -25,6 +25,11 @@ public class CodeGenerator {
         memoryOrganizer = new MemoryOrganizer();
     }
 
+    public void printCode() {
+        for(int i=0;i<memoryOrganizer.getCodeblocksPointer();i++) {
+            System.out.println(memoryOrganizer.code[i].toString());
+        }
+    }
 
     public void patchmain() {
         Integer t = (Integer) semanticStack.pop();
