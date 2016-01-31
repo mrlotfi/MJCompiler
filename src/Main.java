@@ -1,3 +1,4 @@
+import Compiler.CodeGenerator.CodeGenerator;
 import Compiler.Lexer.RawScanner;
 import Compiler.Parser.ParseTable;
 import Compiler.Parser.Parser;
@@ -13,7 +14,6 @@ public class Main {
             scanner.initialize();
         }
         catch(Exception o){}
-
 
 
         Parser parser = new Parser(scanner);

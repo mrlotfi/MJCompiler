@@ -1,6 +1,7 @@
 package Compiler.Parser;
 
 
+import Compiler.CodeGenerator.CodeGenerator;
 import Compiler.Lexer.RawScanner;
 import Compiler.SymTable.Token;
 
@@ -10,9 +11,10 @@ public class Parser {
     private RawScanner scanner;
     private Stack<String> parseStack;
     private ParseTable parseTable;
-
+    private CodeGenerator codegenerator;
     private boolean error_accured;
     public Parser(RawScanner scanner) {
+        codegenerator  = new CodeGenerator(this,scanner);
         this.scanner =  scanner;
         parseStack = new Stack<>();
         parseStack.push("$");
@@ -108,7 +110,20 @@ public class Parser {
                 return -1;
             }
 
+            String actiontype = stackTop.substring(1);
 
+            java.lang.reflect.Method method = null;
+            try {
+                method = codegenerator.getClass().getMethod(actiontype);
+            } catch (Exception e) {
+                System.out.println("Verybad");
+            }
+            try {
+                method.invoke(codegenerator);
+             } catch (Exception e) {
+                System.out.println("Verybad");
+            }
+            parseStack.pop();
             return 1;
         }
         else {

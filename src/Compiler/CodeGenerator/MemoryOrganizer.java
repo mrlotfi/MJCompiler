@@ -7,12 +7,13 @@ public class MemoryOrganizer {
     private int currentTempDataPointer;
     private int codeblocksPointer;
 
-    public ArrayList<Instruction> code;
+    public Instruction[] code;
+
 
     public MemoryOrganizer() {
         currentDataPointer = codeblocksPointer = 0;
         currentTempDataPointer = 100000;
-        code = new ArrayList<>();
+        code = new Instruction[10000];
     }
 
     public int reserveVar() {
@@ -29,11 +30,6 @@ public class MemoryOrganizer {
         codeblocksPointer += 1;
         return  codeblocksPointer - 1;
     }
-
-    public int getCurrentDataPointer() {
-        return currentDataPointer;
-    }
-
 
 
     public int getCodeblocksPointer() {

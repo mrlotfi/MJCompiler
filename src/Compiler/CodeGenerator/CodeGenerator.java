@@ -7,7 +7,7 @@ import Compiler.SymTable.SymbolTable;
 import Compiler.SymTable.SymbolTableEntry;
 import Compiler.SymTable.Token;
 
-import java.net.Inet4Address;
+
 import java.util.Stack;
 
 public class CodeGenerator {
@@ -29,6 +29,8 @@ public class CodeGenerator {
     public void patchmain() {
         Integer t = (Integer) semanticStack.pop();
         //TODO jp beriz to pb[t]
+        memoryOrganizer.code[t.intValue()] =
+                new Instruction("jp",memoryOrganizer.getCodeblocksPointer(),-1,-1,2,0,0);
     }
 
     public void classpid() {
@@ -104,15 +106,19 @@ public class CodeGenerator {
     public void returner() {
         Integer retrunto  = (Integer) semanticStack.pop();
         int i = memoryOrganizer.reserveProgramBlock();
-        //TODO
+        memoryOrganizer.code[i] = new Instruction(
+            "jp",retrunto.intValue(),-1,-1,0,0,0
+        );
     }
 
     public void assignment() {
         Integer rightSideAddr = (Integer) semanticStack.pop();
         Integer leftSideAddr = (Integer) semanticStack.pop();
-        memoryOrganizer.reserveProgramBlock();
+        int i = memoryOrganizer.reserveProgramBlock();
         //TODO
-        //left = right -> code
+        memoryOrganizer.code[i] = new Instruction(
+                "assign",rightSideAddr.intValue(),leftSideAddr.intValue(),-1,0,0,0
+        );
     }
 
     public void label() {
@@ -126,8 +132,14 @@ public class CodeGenerator {
     public void whiler() {
         int i = memoryOrganizer.reserveProgramBlock();
         Integer saveaddr = (Integer) semanticStack.pop();
+        Integer expressionaddr = (Integer) semanticStack.pop();
         Integer labeladdr = (Integer) semanticStack.pop();
-        //TODO
+        memoryOrganizer.code[i] = new Instruction(
+                "jp", labeladdr,-1,-1,2,0,0
+        );
+        memoryOrganizer.code[saveaddr] = new Instruction(
+                "jpf",expressionaddr , memoryOrganizer.getCodeblocksPointer(),-1,0,2,0
+        );
     }
 
     public void pid() {
@@ -140,19 +152,27 @@ public class CodeGenerator {
     public void printer() {
         int i = memoryOrganizer.reserveProgramBlock();
         Integer addr = (Integer) semanticStack.pop();
-        //TODO
+        memoryOrganizer.code[i] = new Instruction(
+                "print", addr.intValue(),-1,-1,0,0,0
+        );
     }
 
     public void jpfsave() {
         Integer saveAddr = (Integer) semanticStack.pop();
+        Integer expressionAddr = (Integer) semanticStack.pop();
         int i = memoryOrganizer.reserveProgramBlock();
         semanticStack.push(new Integer(i));
         //TODO fill saveAddr
+        memoryOrganizer.code[saveAddr] = new Instruction(
+                "jpf", expressionAddr,i+1,-1,0,2,0
+        );
     }
 
     public void jp() {
         Integer saveAddr = (Integer) semanticStack.pop();
-        //TODO fill saveAddr
+        memoryOrganizer.code[saveAddr] = new Instruction(
+                "jp", memoryOrganizer.getCodeblocksPointer(),-1,-1,2,0,0
+        );
     }
 
     public void add() {
@@ -160,16 +180,20 @@ public class CodeGenerator {
         Integer op2 = (Integer) semanticStack.pop();
         int temp = memoryOrganizer.reserveTemp();
         int i = memoryOrganizer.reserveProgramBlock();
-        //TODO
+        memoryOrganizer.code[i] = new Instruction(
+                "add",op1.intValue(),op2.intValue(),temp,0,0,0
+        );
         semanticStack.push(new Integer(temp));
     }
 
-    public void remove() {
+    public void sub() {
         Integer op1 = (Integer) semanticStack.pop();
         Integer op2 = (Integer) semanticStack.pop();
         int temp = memoryOrganizer.reserveTemp();
         int i = memoryOrganizer.reserveProgramBlock();
-        //TODO
+        memoryOrganizer.code[i] = new Instruction(
+                "sub",op1.intValue(),op2.intValue(),temp,0,0,0
+        );
         semanticStack.push(new Integer(temp));
     }
 
@@ -178,7 +202,9 @@ public class CodeGenerator {
         Integer op2 = (Integer) semanticStack.pop();
         int temp = memoryOrganizer.reserveTemp();
         int i = memoryOrganizer.reserveProgramBlock();
-        //TODO
+        memoryOrganizer.code[i] = new Instruction(
+                "mult",op1.intValue(),op2.intValue(),temp,0,0,0
+        );
         semanticStack.push(new Integer(temp));
     }
 
@@ -204,29 +230,40 @@ public class CodeGenerator {
         int i = memoryOrganizer.reserveProgramBlock();
         int argaddress = entry.arguments.get(entry.put_arg_number);
         entry.putarg();
-        //TODO
+        memoryOrganizer.code[i] = new Instruction(
+                "assign",expressionaddress,argaddress,-1,0,0,0
+        );
     }
 
     public void completefunctioncall() {
         SymbolTableEntry entry = (SymbolTableEntry) semanticStack.pop();
         int i = memoryOrganizer.reserveProgramBlock();
         int i2 = memoryOrganizer.reserveProgramBlock();
-        //TODO addresso beriz to entry.caller
-        //TODO jp to method
+        memoryOrganizer.code[i] = new Instruction(
+          "assign",i2+1,entry.method_abosolute_return_addr,-1,2,0,0
+        );
+        memoryOrganizer.code[i2] = new Instruction(
+                "jp",entry.method_aboslute_address,-1,-1,2,0,0
+        );
+        //mese inke variable bude asan
         semanticStack.push(new Integer(entry.method_abosolute_return_addr));
     }
 
     public void truer() {
         int address = memoryOrganizer.reserveTemp();
         int i = memoryOrganizer.reserveProgramBlock();
-        //TODO
+        memoryOrganizer.code[i] = new Instruction(
+                "assign",1,address,-1,2,0,0
+        );
         semanticStack.push(new Integer(address));
     }
 
     public void falser() {
         int address = memoryOrganizer.reserveTemp();
         int i = memoryOrganizer.reserveProgramBlock();
-        //TODO
+        memoryOrganizer.code[i] = new Instruction(
+                "assign",0,address,-1,2,0,0
+        );
         semanticStack.push(new Integer(address));
     }
 
@@ -235,7 +272,9 @@ public class CodeGenerator {
         Integer value = new Integer(t.getName());
         int address = memoryOrganizer.reserveTemp();
         int i = memoryOrganizer.reserveProgramBlock();
-        //TODO
+        memoryOrganizer.code[i] = new Instruction(
+                "assign",value,address,-1,2,0,0
+        );
         semanticStack.push(new Integer(address));
     }
 
@@ -244,7 +283,9 @@ public class CodeGenerator {
         Integer op2 = (Integer) semanticStack.pop();
         int temp = memoryOrganizer.reserveTemp();
         int i = memoryOrganizer.reserveProgramBlock();
-        //TODO
+        memoryOrganizer.code[i] = new Instruction(
+                "eq",op1,op2,temp,0,0,0
+        );
         semanticStack.push(new Integer(temp));
     }
 
@@ -253,7 +294,9 @@ public class CodeGenerator {
         Integer op2 = (Integer) semanticStack.pop();
         int temp = memoryOrganizer.reserveTemp();
         int i = memoryOrganizer.reserveProgramBlock();
-        //TODO
+        memoryOrganizer.code[i] = new Instruction(
+                "lt",op1,op2,temp,0,0,0
+        );
         semanticStack.push(new Integer(temp));
     }
 
@@ -262,34 +305,58 @@ public class CodeGenerator {
         Integer op2 = (Integer) semanticStack.pop();
         int temp = memoryOrganizer.reserveTemp();
         int i = memoryOrganizer.reserveProgramBlock();
-        //TODO
+        memoryOrganizer.code[i] = new Instruction(
+                "and",op1,op2,temp,0,0,0
+        );
         semanticStack.push(new Integer(temp));
     }
 
     public void switchsave() {
         int i = memoryOrganizer.reserveProgramBlock();
         int i2 = memoryOrganizer.reserveProgramBlock();
-        //TODO fill i
+        memoryOrganizer.code[i] = new Instruction(
+                "jp",i2+1,-1,-1,2,0,0
+        );
         semanticStack.push(new Integer(i2));
     }
 
     public void savecase() {
         int i = memoryOrganizer.reserveProgramBlock();
+        int i2 = memoryOrganizer.reserveProgramBlock();
+        int addr = memoryOrganizer.reserveTemp();
+        Integer op1 = (Integer) semanticStack.pop();
+        Integer op2 = (Integer) semanticStack.peek();
+        memoryOrganizer.code[i] = new Instruction(
+            "eq",op1.intValue(),op2.intValue(),addr,0,0,0
+        );
+        semanticStack.push(new Integer(addr));
         semanticStack.push(new Integer(i));
     }
 
     public void casejp() {
         Integer underjp = (Integer) semanticStack.get(0);
         int i = memoryOrganizer.reserveProgramBlock();
-        //TODO jp to underjp - 1
+        memoryOrganizer.code[i] = new Instruction(
+                "jp",underjp-1,-1,-1,2,0,0
+        );
     }
 
     public void patchcase() {
         Integer save2 = (Integer) semanticStack.pop();
         Integer varaddr1 = (Integer) semanticStack.pop();
-        Integer varaddr2 = (Integer) semanticStack.peek();
-        //TODO tu save 2 beriz jp sharti be inja
+        memoryOrganizer.code[save2] = new Instruction(
+            "jpf",varaddr1,memoryOrganizer.getCodeblocksPointer(),-1,0,2,0
+        );
 
     }
+
+    public void patchswitch() {
+        semanticStack.pop();
+        Integer save = (Integer) semanticStack.pop();
+        memoryOrganizer.code[save] = new Instruction(
+                "jp",memoryOrganizer.getCodeblocksPointer(),-1,-1,2,0,0
+        );
+    }
+
 }
 

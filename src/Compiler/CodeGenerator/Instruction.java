@@ -14,4 +14,16 @@ public class Instruction {
         for(int i=3;i<6;i++)
             op_type[i-3] = optype[i];
     }
+
+    public String toString() {
+        String t = "( "+type+", ";
+        for(int i=0;i<3;i++)
+            switch (op_type[i]) {
+                case 0: t = t + op[i]+", ";
+                case 1: t = t + "@"+op[i]+", ";
+                case 2: t = t + "#"+op[i]+", ";
+            }
+        t = t+" )";
+        return t;
+    }
 }

@@ -21,8 +21,8 @@ public class ParseTable {
 
         //Goal
         temp_column = new HashMap<>();
-        temp_column.put("class",new String[] {"Source"});
-        temp_column.put("public",new String[] {"Source"});
+        temp_column.put("class",new String[] {"#save", "Source"});
+        temp_column.put("public",new String[] {"#save", "Source"});
         temp_column.put("$", new String[] {"sync"});
         MainTable.put("Goal",temp_column);
 
