@@ -1,13 +1,18 @@
 package Compiler.CodeGenerator;
 
+import java.util.ArrayList;
+
 public class MemoryOrganizer {
     private int currentDataPointer;
     private int currentTempDataPointer;
     private int codeblocksPointer;
 
+    public ArrayList<Instruction> code;
+
     public MemoryOrganizer() {
         currentDataPointer = codeblocksPointer = 0;
         currentTempDataPointer = 100000;
+        code = new ArrayList<>();
     }
 
     public int reserveVar() {
@@ -15,13 +20,23 @@ public class MemoryOrganizer {
         return currentDataPointer - 4;
     }
 
-    public int getTemp() {
+    public int reserveTemp() {
         currentTempDataPointer -= 4;
         return currentTempDataPointer + 4;
     }
 
-    public int getProgramBlock() {
+    public int reserveProgramBlock() {
         codeblocksPointer += 1;
         return  codeblocksPointer - 1;
+    }
+
+    public int getCurrentDataPointer() {
+        return currentDataPointer;
+    }
+
+
+
+    public int getCodeblocksPointer() {
+        return currentTempDataPointer;
     }
 }
